@@ -310,6 +310,7 @@ async function ativarNotificacoes(){
       if(window.OneSignalDeferred){
         window.OneSignalDeferred.push(async function(OneSignal){
           await OneSignal.Notifications.requestPermission();
+          await OneSignal.User.PushSubscription.optIn();
           resolve();
         });
       } else {
