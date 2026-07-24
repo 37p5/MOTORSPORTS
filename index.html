@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel de Corridas — F1 · F2 · NASCAR · IndyCar</title>
+<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+<script>
+  window.OneSignalDeferred = window.OneSignalDeferred || [];
+  OneSignalDeferred.push(async function(OneSignal) {
+    await OneSignal.init({
+      appId: "3bfbd197-8d48-41ce-9aac-be0abfe6a3cc",
+    });
+  });
+</script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600;700&display=swap');
+
+  :root{
+    --asphalt: #0c0e10;
+    --asphalt-2: #15181b;
+    --line: #2a2f34;
+    --paper: #eae7de;
+    --paper-dim: #9a9b94;
+    --amber: #ffb200;
+    --green: #3ddc84;
+    --red-light: #e6342b;
+    --f1: #e6342b;
+    --f2: #3d7be6;
+    --nascar: #f2c94c;
+    --indy: #3ddc84;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--asphalt);
+    background-image:
+      radial-gradient(circle at 15% 0%, rgba(255,178,0,0.06), transparent 40%),
+      repeating-linear-gradient(0deg, rgba(255,255,255,0.015) 0px, rgba(255,255,255,0.015) 1px, transparent 1px, transparent 3px);
+    color:var(--paper);
+    font-family:'Inter',sans-serif;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  .wrap{max-width:760px;margin:0 auto;padding:24px 18px 60px;}
+
+  /* Header */
+  .masthead{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    border-bottom:2px solid var(--line);
+    padding-bottom:14px;
+    margin-bottom:22px;
+  }
+  .masthead h1{
+    font-family:'Space Mono',monospace;
+    font-size:15px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    margin:0;
+    color:var(--paper-dim);
+    font-weight:700;
+  }
+  .masthead .date{
+    font-family:'Space Mono',monospace;
+    font-size:12px;
+    color:var(--paper-dim);
+  }
+
+  .notify-btn{
+    display:block;
+    width:100%;
+    font-family:'Space Mono',monospace;
+    font-size:12px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    background:var(--amber);
+    color:#0c0e10;
+    border:none;
+    border-radius:4px;
+    padding:12px;
+    font-weight:700;
+    cursor:pointer;
+    margin-bottom:22px;
+  }
+  .notify-btn.on{
+    background:var(--green);
+  }
+
+  /* Start lights / next race hero */
+  .next-race{
+    background:var(--asphalt-2);
+    border:1px solid var(--line);
+    border-radius:4px;
+    padding:22px 20px 20px;
+    margin-bottom:28px;
+    position:relative;
+    overflow:hidden;
+  }
+  .next-race::before{
+    content:"";
+    position:absolute;
+    top:0; left:0; right:0; height:3px;
+    background:linear-gradient(90deg, var(--f1), var(--f2), var(--nascar), var(--indy));
+  }
+  .lights{
+    display:flex;
+    gap:8px;
+    margin-bottom:16px;
+  }
+  .lights .bulb{
+    width:14px;height:14px;border-radius:50%;
+    background:#3a1210;
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,0.06);
+  }
+  .lights .bulb.on{
+    background:var(--red-light);
+    box-shadow:0 0 10px 2px rgba(230,52,43,0.7), inset 0 0 0 1px rgba(255,255,255,0.2);
+  }
+  .next-label{
+    font-family:'Space Mono',monospace;
+    font-size:11px;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    color:var(--amber);
+    margin-bottom:6px;
+  }
+  .next-title{
+    font-size:22px;
+    font-weight:700;
+    margin:0 0 4px;
+    line-height:1.25;
+  }
+  .next-meta{
+    font-family:'Space Mono',monospace;
+    font-size:12px;
+    color:var(--paper-dim);
+    margin-bottom:18px;
+  }
+  .countdown{
+    display:flex;
+    gap:18px;
+  }
+  .countdown .unit{
+    text-align:center;
+  }
+  .countdown .num{
+    font-family:'Space Mono',monospace;
+    font-size:34px;
+    font-weight:700;
+    color:var(--paper);
+    line-height:1;
+  }
+  .countdown .lbl{
+    font-family:'Space Mono',monospace;
+    font-size:9px;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    color:var(--paper-dim);
+    margin-top:4px;
+  }
+
+  /* Filter tabs */
+  .filters{
+    display:flex;
+    gap:6px;
+    margin-bottom:18px;
+    flex-wrap:wrap;
+  }
+  .filters button{
+    font-family:'Space Mono',monospace;
+    font-size:11px;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    background:transparent;
+    border:1px solid var(--line);
+    color:var(--paper-dim);
+    padding:7px 12px;
+    border-radius:3px;
+    cursor:pointer;
+    transition:all .15s ease;
+  }
+  .filters button.active{
+    color:var(--asphalt);
+    border-color:transparent;
+  }
+  .filters button[data-cat="all"].active{background:var(--paper);}
+  .filters button[data-cat="F1"].active{background:var(--f1); color:#fff;}
+  .filters button[data-cat="F2"].active{background:var(--f2); color:#fff;}
+  .filters button[data-cat="NASCAR"].active{background:var(--nascar);}
+  .filters button[data-cat="IndyCar"].active{background:var(--indy);}
+
+  /* Race list — timing tower rows */
+  .board{
+    border-top:1px solid var(--line);
+  }
+  .row{
+    display:grid;
+    grid-template-columns:52px 1fr auto;
+    align-items:center;
+    gap:12px;
+    padding:13px 4px;
+    border-bottom:1px solid var(--line);
+  }
+  .row .tag{
+    font-family:'Space Mono',monospace;
+    font-size:10px;
+    font-weight:700;
+    letter-spacing:0.04em;
+    padding:4px 0;
+    text-align:center;
+    border-radius:3px;
+    color:#0c0e10;
+  }
+  .tag.F1{background:var(--f1); color:#fff;}
+  .tag.F2{background:var(--f2); color:#fff;}
+  .tag.NASCAR{background:var(--nascar);}
+  .tag.IndyCar{background:var(--indy);}
+
+  .row .info .name{
+    font-size:14.5px;
+    font-weight:600;
+    margin-bottom:2px;
+  }
+  .row .info .place{
+    font-family:'Space Mono',monospace;
+    font-size:11px;
+    color:var(--paper-dim);
+  }
+  .row .when{
+    text-align:right;
+    font-family:'Space Mono',monospace;
+  }
+  .row .when .d{
+    font-size:13px;
+    color:var(--paper);
+  }
+  .row .when .rel{
+    font-size:10px;
+    color:var(--amber);
+    margin-top:2px;
+  }
+  .row.past{opacity:0.35;}
+  .row.past .rel{color:var(--paper-dim);}
+
+  .foot{
+    margin-top:28px;
+    font-family:'Space Mono',monospace;
+    font-size:10.5px;
+    color:var(--paper-dim);
+    line-height:1.6;
+    border-top:1px solid var(--line);
+    padding-top:14px;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    * { transition: none !important; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="masthead">
+    <h1>Torre de Cronometragem</h1>
+    <div class="date" id="today"></div>
+  </div>
+
+  <button class="notify-btn" id="notifyBtn" onclick="ativarNotificacoes()">🔔 Ativar notificações</button>
+
+  <div class="next-race">
+    <div class="lights" id="lights">
+      <div class="bulb on"></div><div class="bulb on"></div><div class="bulb on"></div><div class="bulb on"></div><div class="bulb on"></div>
+    </div>
+    <div class="next-label">Próxima largada</div>
+    <div class="next-title" id="nr-title">—</div>
+    <div class="next-meta" id="nr-meta">—</div>
+    <div class="countdown" id="countdown">
+      <div class="unit"><div class="num" id="cd-d">00</div><div class="lbl">dias</div></div>
+      <div class="unit"><div class="num" id="cd-h">00</div><div class="lbl">horas</div></div>
+      <div class="unit"><div class="num" id="cd-m">00</div><div class="lbl">min</div></div>
+      <div class="unit"><div class="num" id="cd-s">00</div><div class="lbl">seg</div></div>
+    </div>
+  </div>
+
+  <div class="filters" id="filters">
+    <button data-cat="all" class="active">Todas</button>
+    <button data-cat="F1">F1</button>
+    <button data-cat="F2">F2</button>
+    <button data-cat="NASCAR">NASCAR</button>
+    <button data-cat="IndyCar">IndyCar</button>
+  </div>
+
+  <div class="board" id="board"></div>
+
+  <div class="foot">
+    Datas com base nos calendários oficiais divulgados até jul/2026. Corridas de F2 seguem parte dos fins de semana da F1 (14 de 24 etapas). Horários exatos de largada variam por fuso — confira a fonte oficial de cada categoria perto da data. Fase de playoffs da NASCAR ("The Chase") começa em 6 de setembro.
+  </div>
+
+</div>
+
+<script>
+async function ativarNotificacoes(){
+  const btn = document.getElementById('notifyBtn');
+  try{
+    await new Promise(resolve => {
+      if(window.OneSignalDeferred){
+        window.OneSignalDeferred.push(async function(OneSignal){
+          await OneSignal.Notifications.requestPermission();
+          resolve();
+        });
+      } else {
+        resolve();
+      }
+    });
+    btn.textContent = "✅ Notificações ativadas";
+    btn.classList.add('on');
+  } catch(e){
+    btn.textContent = "⚠️ Não deu pra ativar — tente de novo";
+  }
+}
+
+const races = [
+  {cat:"F1", name:"GP da Hungria", place:"Budapeste, Hungria", date:"2026-07-26"},
+  {cat:"F2", name:"Hungaroring", place:"Budapeste, Hungria", date:"2026-07-26"},
+  {cat:"NASCAR", name:"Iowa Corn 350", place:"Iowa Speedway", date:"2026-08-09"},
+  {cat:"IndyCar", name:"Grande Prêmio de Portland", place:"Portland International Raceway", date:"2026-08-09"},
+  {cat:"NASCAR", name:"Cook Out 400", place:"Richmond Raceway", date:"2026-08-15"},
+  {cat:"IndyCar", name:"Streets of Markham", place:"Markham, Canadá", date:"2026-08-16"},
+  {cat:"F1", name:"GP da Holanda (Sprint)", place:"Zandvoort, Holanda", date:"2026-08-23"},
+  {cat:"NASCAR", name:"Dollar Tree 301", place:"New Hampshire Motor Speedway", date:"2026-08-23"},
+  {cat:"NASCAR", name:"Coke Zero Sugar 400", place:"Daytona International Speedway", date:"2026-08-29"},
+  {cat:"IndyCar", name:"Milwaukee Mile (corridas 1 e 2)", place:"Milwaukee, EUA", date:"2026-08-29"},
+  {cat:"F1", name:"GP da Itália", place:"Monza, Itália", date:"2026-09-06"},
+  {cat:"F2", name:"Monza", place:"Monza, Itália", date:"2026-09-06"},
+  {cat:"NASCAR", name:"Cook Out Southern 500 (início dos playoffs)", place:"Darlington Raceway", date:"2026-09-06"},
+  {cat:"NASCAR", name:"Enjoy Illinois 300", place:"World Wide Technology Raceway", date:"2026-09-13"},
+  {cat:"F1", name:"GP de Madrid (estreia)", place:"Circuito Madring, Madri", date:"2026-09-13"},
+  {cat:"F2", name:"Madri", place:"Circuito Madring, Madri", date:"2026-09-13"},
+  {cat:"F1", name:"GP do Azerbaijão", place:"Baku, Azerbaijão", date:"2026-09-27"},
+  {cat:"F1", name:"GP de Singapura (Sprint)", place:"Singapura", date:"2026-10-11"},
+  {cat:"F1", name:"GP dos EUA", place:"Austin, Texas", date:"2026-10-25"},
+  {cat:"F1", name:"GP da Cidade do México", place:"Cidade do México", date:"2026-11-01"},
+  {cat:"F1", name:"GP do Brasil", place:"Interlagos, São Paulo", date:"2026-11-08"},
+  {cat:"NASCAR", name:"Corrida do Campeonato (final)", place:"Homestead-Miami Speedway", date:"2026-11-08"},
+  {cat:"F1", name:"GP de Las Vegas", place:"Las Vegas, EUA", date:"2026-11-21"},
+  {cat:"F1", name:"GP do Catar", place:"Lusail, Catar", date:"2026-11-29"},
+  {cat:"F1", name:"GP de Abu Dhabi (final)", place:"Yas Marina, Abu Dhabi", date:"2026-12-06"},
+  {cat:"F2", name:"Abu Dhabi (final da temporada)", place:"Yas Marina, Abu Dhabi", date:"2026-12-06"},
+];
+
+races.sort((a,b) => new Date(a.date) - new Date(b.date));
+
+const now = new Date();
+document.getElementById('today').textContent = now.toLocaleDateString('pt-BR', {weekday:'short', day:'2-digit', month:'short', year:'numeric'});
+
+function daysUntil(d){
+  const target = new Date(d + "T12:00:00");
+  return Math.ceil((target - now) / (1000*60*60*24));
+}
+
+function fmtDate(d){
+  const dt = new Date(d + "T12:00:00");
+  return dt.toLocaleDateString('pt-BR', {day:'2-digit', month:'short'}).replace('.','');
+}
+
+function relLabel(days){
+  if(days < 0) return "encerrada";
+  if(days === 0) return "hoje";
+  if(days === 1) return "amanhã";
+  return `em ${days} dias`;
+}
+
+// Next upcoming race (soonest with days >= 0)
+const upcoming = races.filter(r => daysUntil(r.date) >= 0);
+const next = upcoming[0];
+
+if(next){
+  document.getElementById('nr-title').textContent = `${next.cat} · ${next.name}`;
+  document.getElementById('nr-meta').textContent = `${next.place} — ${fmtDate(next.date)}`;
+
+  function tick(){
+    const target = new Date(next.date + "T12:00:00");
+    const diff = target - new Date();
+    if(diff <= 0){
+      document.getElementById('cd-d').textContent = "00";
+      document.getElementById('cd-h').textContent = "00";
+      document.getElementById('cd-m').textContent = "00";
+      document.getElementById('cd-s').textContent = "00";
+      return;
+    }
+    const d = Math.floor(diff/(1000*60*60*24));
+    const h = Math.floor((diff/(1000*60*60))%24);
+    const m = Math.floor((diff/(1000*60))%60);
+    const s = Math.floor((diff/1000)%60);
+    document.getElementById('cd-d').textContent = String(d).padStart(2,'0');
+    document.getElementById('cd-h').textContent = String(h).padStart(2,'0');
+    document.getElementById('cd-m').textContent = String(m).padStart(2,'0');
+    document.getElementById('cd-s').textContent = String(s).padStart(2,'0');
+  }
+  tick();
+  setInterval(tick, 1000);
+}
+
+function renderBoard(filter){
+  const board = document.getElementById('board');
+  board.innerHTML = '';
+  races.forEach(r => {
+    if(filter !== 'all' && r.cat !== filter) return;
+    const days = daysUntil(r.date);
+    const row = document.createElement('div');
+    row.className = 'row' + (days < 0 ? ' past' : '');
+    row.innerHTML = `
+      <div class="tag ${r.cat}">${r.cat}</div>
+      <div class="info">
+        <div class="name">${r.name}</div>
+        <div class="place">${r.place}</div>
+      </div>
+      <div class="when">
+        <div class="d">${fmtDate(r.date)}</div>
+        <div class="rel">${relLabel(days)}</div>
+      </div>
+    `;
+    board.appendChild(row);
+  });
+}
+
+renderBoard('all');
+
+document.querySelectorAll('#filters button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#filters button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderBoard(btn.dataset.cat);
+  });
+});
+</script>
+</body>
+</html>
